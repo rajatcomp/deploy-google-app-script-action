@@ -3,11 +3,11 @@ name: Deploy Script
 on:
   workflow_dispatch:
   push:
-    branches: [main, develop]
-  release:
-    types: [published]
-  schedule:
-    - cron: "0 0 * * SUN"
+    branches: [main]
+  # release:
+  #   types: [published]
+  # schedule:
+  #   - cron: "0 0 * * SUN"
 
 jobs:
   deploy:
@@ -34,22 +34,22 @@ jobs:
           echo ::add-mask::$(tr -d '\n\r' < ~/.clasprc.json)
           echo "CLASPRC_JSON_FILE=$(tr -d '\n\r' < ~/.clasprc.json)" >> $GITHUB_ENV        
       
-      - name: Save CLASPRC_JSON_FILE environment variable to CLASPRC_JSON repo secret
-        id: set-clasprc-secret
-        if: ${{ env.CLASPRC_JSON_FILE != env.CLASPRC_JSON_SECRET  }}
-        uses: hmanzur/actions-set-secret@v2.0.0
-        env:
-          CLASPRC_JSON_SECRET: ${{ secrets.CLASPRC_JSON }}
-        with:
-          name: "CLASPRC_JSON"
-          value: ${{ env.CLASPRC_JSON_FILE }}
-          repository: ${{ github.repository }}
-          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+      # - name: Save CLASPRC_JSON_FILE environment variable to CLASPRC_JSON repo secret
+      #   id: set-clasprc-secret
+      #   if: ${{ env.CLASPRC_JSON_FILE != env.CLASPRC_JSON_SECRET  }}
+      #   uses: hmanzur/actions-set-secret@v2.0.0
+      #   env:
+      #     CLASPRC_JSON_SECRET: ${{ secrets.CLASPRC_JSON }}
+      #   with:
+      #     name: "CLASPRC_JSON"
+      #     value: ${{ env.CLASPRC_JSON_FILE }}
+      #     repository: ${{ github.repository }}
+      #     token: ${{ secrets.REPO_ACCESS_TOKEN }}
 
       - name: Checkout repo
         id: checkout-repo
-        if: ${{github.event_name	!= 'schedule' }}
-        uses: actions/checkout@v2
+        # if: ${{github.event_name	!= 'schedule' }}
+        uses: actions/checkout@v4
 
       - name: Set scriptId in .clasp.json file
         id: set-script-id
@@ -60,7 +60,7 @@ jobs:
 
       - name: Push script to scripts.google.com
         id: clasp-push
-        if: ${{ github.event_name	!= 'schedule'}}
+        # if: ${{ github.event_name	!= 'schedule'}}
         run: clasp push -f
 
       - name: Deploy Script
@@ -69,6 +69,7 @@ jobs:
         run: clasp deploy -i "$DEPLOYMENT_ID" -d "$GITHUB_REF"
         env:
           DEPLOYMENT_ID: ${{ secrets.DEPLOYMENT_ID }}
+
   # dump-context:
   #   runs-on: ubuntu-latest
   #   steps:
